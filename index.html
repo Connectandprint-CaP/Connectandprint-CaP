@@ -36,7 +36,7 @@
                 <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
                     <div>
                         <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Admin-Bereich</span>
-                        <h2 class="text-xl font-bold text-white">Auftrags- & Projektmanagement</h2>
+                        <h2 class="text-xl font-bold text-white">Auftrags- & Partnerverwaltung</h2>
                     </div>
                     <div class="flex items-center gap-2">
                         <input type="text" id="searchInput" oninput="renderAdminLists()" placeholder="🔍 Suchen..." 
@@ -47,8 +47,57 @@
                     </div>
                 </div>
 
+                <!-- SEKTION: PARTNER-VERWALTUNG -->
+                <div class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-orange-400">🤝 Netzwerk-Partner & Maschinen verwalten</h3>
+                        <button type="button" onclick="togglePartnerForm()" class="text-xs bg-orange-600 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg transition">
+                            + Neuen Partner hinzufügen
+                        </button>
+                    </div>
+
+                    <!-- Formular zum Hinzufügen (Standardmäßig eingeklappt) -->
+                    <form id="partnerForm" class="hidden space-y-3 pt-3 border-t border-slate-800" onsubmit="handleSavePartner(event)">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">Betriebsname *</label>
+                                <input type="text" id="p_business" required placeholder="z.B. BoostedLayers" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">Ansprechpartner *</label>
+                                <input type="text" id="p_name" required placeholder="z.B. Kevin Sparmann" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">E-Mail-Adresse *</label>
+                                <input type="email" id="p_email" required placeholder="partner@beispiel.de" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">Standort / Adresse</label>
+                                <input type="text" id="p_address" placeholder="z.B. Mühlhäuser Straße 8, Großengottern" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">Maschinenpark</label>
+                                <input type="text" id="p_machines" placeholder="z.B. Bambu Lab X2D" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">Materialien / CAD</label>
+                                <input type="text" id="p_materials" placeholder="z.B. PLA, PETG, Fusion 360" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="togglePartnerForm()" class="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg">Abbrechen</button>
+                            <button type="submit" class="text-xs bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg font-semibold">Partner speichern</button>
+                        </div>
+                    </form>
+
+                    <!-- Liste der eingetragenen Partner im Admin -->
+                    <div id="adminPartnerList" class="space-y-2 pt-1">
+                        <!-- Wird dynamisch gefüllt -->
+                    </div>
+                </div>
+
                 <!-- AKTIVER ARBEITSBEREICH -->
-                <div class="space-y-3">
+                <div class="space-y-3 pt-2">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
                         <span>🔵 Aktive Anfragen & In Bearbeitung</span>
                     </h3>
@@ -82,35 +131,15 @@
             </p>
         </header>
 
-        <!-- ÖFFENTLICHER MAKER BEREICH -->
+        <!-- ÖFFENTLICHER MAKER BEREICH (Wird dynamisch aus DB geladen) -->
         <section class="space-y-4">
             <div class="border-b border-slate-800 pb-3">
                 <span class="text-xs font-bold uppercase tracking-wider text-orange-500">Unser Netzwerk</span>
                 <h2 class="text-xl font-bold text-white">Unsere zertifizierten 3D-Druck-Partner</h2>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-white text-lg">BoostedLayers</h3>
-                            <p class="text-xs text-orange-400 font-medium">Ansprechpartner: Kevin Sparmann</p>
-                        </div>
-                        <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
-                    </div>
-                    <p class="text-xs text-slate-400">📍 Mühlhäuser Straße 8, 99991 Großengottern</p>
-                    <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
-                        <p>🖨️ <strong>Maschinenpark:</strong> Bambu Lab H2D & X2D (Bauvolumen max. ~320x325x340 mm)</p>
-                        <p>🧬 <strong>Materialien:</strong> Praktisch alle thermoplastischen Filamente</p>
-                        <p>💻 <strong>Konstruktion & CAD:</strong> Fusion 360 / SolidWorks</p>
-                    </div>
-                </div>
-                
-                <div class="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center space-y-2">
-                    <span class="text-slate-600 text-2xl">+</span>
-                    <h3 class="font-semibold text-slate-400 text-sm">Weitere Partner folgen</h3>
-                    <p class="text-xs text-slate-600 max-w-xs">Unser Netzwerk wächst kontinuierlich für noch mehr Kapazität und regionale Nähe.</p>
-                </div>
+            <div id="publicPartnersGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-sm text-slate-400">Lade Partnernetzwerk...</p>
             </div>
         </section>
 
@@ -207,7 +236,94 @@
             }
         }
 
-        // Formular absenden
+        function togglePartnerForm() {
+            const form = document.getElementById('partnerForm');
+            if (form) form.classList.toggle('hidden');
+        }
+
+        // Beim Start Partner für Kunden laden
+        loadPublicPartners();
+
+        async function loadPublicPartners() {
+            const grid = document.getElementById('publicPartnersGrid');
+            if (!grid) return;
+
+            const { data, error } = await supabaseClient.from('partners').select('*');
+            cachedPartners = data || [];
+
+            if (cachedPartners.length === 0) {
+                grid.innerHTML = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-white text-lg">BoostedLayers</h3>
+                                <p class="text-xs text-orange-400 font-medium">Ansprechpartner: Kevin Sparmann</p>
+                            </div>
+                            <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
+                        </div>
+                        <p class="text-xs text-slate-400">📍 Mühlhäuser Straße 8, 99991 Großengottern</p>
+                        <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
+                            <p>🖨️ <strong>Maschinenpark:</strong> Bambu Lab H2D & X2D</p>
+                            <p>🧬 <strong>Materialien:</strong> Alle thermoplastischen Filamente</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = cachedPartners.map(p => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">${escapeHtml(p.business_name)}</h3>
+                            <p class="text-xs text-orange-400 font-medium">Ansprechpartner: ${escapeHtml(p.contact_name)}</p>
+                        </div>
+                        <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
+                    </div>
+                    ${p.address ? `<p class="text-xs text-slate-400">📍 ${escapeHtml(p.address)}</p>` : ''}
+                    <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
+                        ${p.machines ? `<p>🖨️ <strong>Maschinenpark:</strong> ${escapeHtml(p.machines)}</p>` : ''}
+                        ${p.materials ? `<p>🧬 <strong>Materialien/CAD:</strong> ${escapeHtml(p.materials)}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleSavePartner(e) {
+            e.preventDefault();
+            const payload = {
+                business_name: document.getElementById('p_business').value,
+                contact_name: document.getElementById('p_name').value,
+                email: document.getElementById('p_email').value,
+                address: document.getElementById('p_address').value,
+                machines: document.getElementById('p_machines').value,
+                materials: document.getElementById('p_materials').value
+            };
+
+            const { error } = await supabaseClient.from('partners').insert([payload]);
+            if (error) {
+                alert('Fehler beim Speichern des Partners: ' + error.message);
+            } else {
+                alert('Partner erfolgreich hinzugefügt!');
+                document.getElementById('partnerForm').reset();
+                togglePartnerForm();
+                loadAdminData();
+                loadPublicPartners();
+            }
+        }
+
+        async function deletePartner(id) {
+            if (!confirm('Möchtest du diesen Partner wirklich löschen?')) return;
+            const { error } = await supabaseClient.from('partners').delete().eq('id', id);
+            if (error) {
+                alert('Fehler beim Löschen: ' + error.message);
+            } else {
+                loadAdminData();
+                loadPublicPartners();
+            }
+        }
+
+        // Formular absenden (Anfragen)
         document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -313,21 +429,30 @@
         async function loadAdminData() {
             const activeContainer = document.getElementById('activeInquiriesList');
             const completedContainer = document.getElementById('completedInquiriesList');
+            const adminPartnerList = document.getElementById('adminPartnerList');
             if (!activeContainer || !completedContainer) return;
             
-            activeContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten & Partner...</p>';
+            activeContainer.innerHTML = '<p class="text-sm text-slate-400">Lade Daten...</p>';
 
+            // Partner laden
             const partnersRes = await supabaseClient.from('partners').select('*');
             cachedPartners = partnersRes.data || [];
 
-            if (cachedPartners.length === 0) {
-                cachedPartners = [{
-                    name: 'Kevin Sparmann',
-                    business_name: 'BoostedLayers',
-                    email: 'kevin@boostedlayers.de'
-                }];
+            if (adminPartnerList) {
+                adminPartnerList.innerHTML = cachedPartners.length === 0 
+                    ? '<p class="text-xs text-slate-500 italic">Keine Partner eingetragen.</p>'
+                    : cachedPartners.map(p => `
+                        <div class="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 text-xs">
+                            <div>
+                                <span class="font-bold text-white">${escapeHtml(p.business_name)}</span> 
+                                <span class="text-slate-400">(${escapeHtml(p.contact_name)} · ${escapeHtml(p.email)})</span>
+                            </div>
+                            <button type="button" onclick="deletePartner('${p.id}')" class="text-red-400 hover:text-red-300 px-2 py-1">Löschen</button>
+                        </div>
+                    `).join('');
             }
 
+            // Anfragen laden
             const { data, error } = await supabaseClient
                 .from('inquiries')
                 .select('*')
@@ -340,9 +465,9 @@
 
             cachedInquiries = data || [];
             renderAdminLists();
+            loadPublicPartners();
         }
 
-        // Rendert die Listen basierend auf Status und Suchfilter
         function renderAdminLists() {
             const activeContainer = document.getElementById('activeInquiriesList');
             const completedContainer = document.getElementById('completedInquiriesList');
@@ -380,7 +505,7 @@
             const shortId = item.id ? item.id.substring(0, 8) : '---';
 
             const partnerOptions = cachedPartners.map((p, pIdx) => {
-                return `<option value="${pIdx}">${p.business_name} (${p.name})</option>`;
+                return `<option value="${p.email}">${p.business_name} (${p.contact_name})</option>`;
             }).join('');
 
             let fileButtonHtml = '';
@@ -452,15 +577,16 @@
             const selectEl = document.getElementById(`partner-select-${id}`);
             if (!selectEl) return;
 
-            const partner = cachedPartners[selectEl.value];
-            if (!partner || !partner.email) {
+            const partnerEmail = selectEl.value;
+            const partner = cachedPartners.find(p => p.email === partnerEmail);
+            if (!partner) {
                 alert('Bitte wähle einen gültigen Partner aus.');
                 return;
             }
 
             const subject = `Neuer PrintConnect Auftrag: ${item.project_title}`;
             let rawBody = 
-`Hallo ${partner.name},
+`Hallo ${partner.contact_name},
 
 wir haben eine neue Projektanfrage über PrintConnect erhalten, die perfekt zu deinem Profil und deinen Kapazitäten passt.
 
@@ -517,7 +643,6 @@ Dein PrintConnect Team`;
             if (error) {
                 alert('Status konnte nicht gespeichert werden: ' + error.message);
             } else {
-                // Lokalen Cache aktualisieren und Ansicht sofort neu zeichnen
                 const item = cachedInquiries.find(i => i.id === id);
                 if (item) item.status = newStatus;
                 renderAdminLists();
