@@ -17,10 +17,10 @@
                 <span class="font-bold text-lg tracking-tight">PrintConnect</span>
             </div>
             <div>
-                <button id="openLoginBtn" onclick="toggleModal(true)" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-lg border border-slate-700 transition">
+                <button type="button" id="openLoginBtn" onclick="toggleModal(true)" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-lg border border-slate-700 transition cursor-pointer">
                     Admin Login
                 </button>
-                <button id="logoutBtn" onclick="handleLogout()" class="hidden text-xs font-medium bg-red-950/60 hover:bg-red-900 text-red-200 px-3.5 py-2 rounded-lg border border-red-800/60 transition">
+                <button type="button" id="logoutBtn" onclick="handleLogout()" class="hidden text-xs font-medium bg-red-950/60 hover:bg-red-900 text-red-200 px-3.5 py-2 rounded-lg border border-red-800/60 transition cursor-pointer">
                     Abmelden
                 </button>
             </div>
@@ -37,7 +37,7 @@
                         <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Admin-Bereich</span>
                         <h2 class="text-xl font-bold text-white">Projektanfragen & Zuweisung</h2>
                     </div>
-                    <button onclick="loadAdminData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-700 transition">
+                    <button type="button" onclick="loadAdminData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-700 transition">
                         ↻ Aktualisieren
                     </button>
                 </div>
@@ -144,7 +144,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
             <div class="flex justify-between items-center">
                 <h3 class="text-lg font-bold text-white">Admin-Login</h3>
-                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white text-xl">&times;</button>
+                <button type="button" onclick="toggleModal(false)" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             <form id="loginForm" class="space-y-4">
                 <div>
@@ -171,7 +171,10 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function toggleModal(show) {
-            document.getElementById('loginModal').classList.toggle('hidden', !show);
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.toggle('hidden', !show);
+            }
         }
 
         // Formular absenden
@@ -185,7 +188,7 @@
                 project_title: document.getElementById('project_title').value,
                 project_details: document.getElementById('project_details').value,
                 customer_name: document.getElementById('customer_name').value,
-                customer_email: document.getElementById('customer_email'].value,
+                customer_email: document.getElementById('customer_email').value,
                 status: 'new',
                 assigned_partner: 'Noch nicht zugewiesen'
             };
@@ -236,9 +239,13 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             const isLoggedIn = !!session;
 
-            document.getElementById('adminDashboard').classList.toggle('hidden', !isLoggedIn);
-            document.getElementById('openLoginBtn').classList.toggle('hidden', isLoggedIn);
-            document.getElementById('logoutBtn').classList.toggle('hidden', !isLoggedIn);
+            const adminDashboard = document.getElementById('adminDashboard');
+            const openLoginBtn = document.getElementById('openLoginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (adminDashboard) adminDashboard.classList.toggle('hidden', !isLoggedIn);
+            if (openLoginBtn) openLoginBtn.classList.toggle('hidden', isLoggedIn);
+            if (logoutBtn) logoutBtn.classList.toggle('hidden', !isLoggedIn);
 
             if (isLoggedIn) {
                 loadAdminData();
@@ -247,6 +254,8 @@
 
         async function loadAdminData() {
             const listContainer = document.getElementById('inquiriesList');
+            if (!listContainer) return;
+            
             listContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten...</p>';
 
             const { data, error } = await supabaseClient
@@ -270,9 +279,8 @@
                 }) : 'Unbekannt';
 
                 const currentStatus = item.status || 'new';
-                const assignedPartner = item.assigned_partner || '';
+                const assignedPartner = item.assigned_partner || 'Noch nicht zugewiesen';
 
-                // E-Mail-Link für den Kunden generieren (öffnet das Standard-Mailprogramm)
                 const mailSubject = encodeURIComponent(`Dein PrintConnect Projekt: ${item.project_title}`);
                 const mailBody = encodeURIComponent(`Hallo ${item.customer_name},\n\nwir haben deine Anfrage bezüglich "${item.project_title}" erhalten und bearbeiten diese.\n\nDetails:\n${item.project_details}\n\nViele Grüße\nDein PrintConnect Team`);
                 const mailtoLink = `mailto:${item.customer_email}?subject=${mailSubject}&body=${mailBody}`;
@@ -301,13 +309,12 @@
                             ${escapeHtml(item.project_details || 'Keine Beschreibung angegeben.')}
                         </p>
 
-                        <!-- Zuweisung an Partner & Kontakt-Button -->
                         <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-900 text-xs">
                             <div class="flex items-center gap-2">
                                 <span class="text-slate-400 font-medium">Zuweisen an:</span>
                                 <select onchange="updatePartner('${item.id}', this.value)"
                                     class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
-                                    <option value="Noch nicht zugewiesen" ${assignedPartner === '' || assignedPartner === 'Noch nicht zugewiesen' ? 'selected' : ''}>-- Bitte wählen --</option>
+                                    <option value="Noch nicht zugewiesen" ${assignedPartner === 'Noch nicht zugewiesen' ? 'selected' : ''}>-- Bitte wählen --</option>
                                     <option value="Kevin Sparmann (BoostedLayers)" ${assignedPartner === 'Kevin Sparmann (BoostedLayers)' ? 'selected' : ''}>Kevin Sparmann (BoostedLayers)</option>
                                 </select>
                             </div>
