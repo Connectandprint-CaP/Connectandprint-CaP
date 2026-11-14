@@ -29,48 +29,20 @@
 
     <main class="max-w-4xl mx-auto px-4 py-8 space-y-10">
 
-        <!-- ADMIN DASHBOARD (Sichtbar nach dem Login) -->
+        <!-- ADMIN DASHBOARD (Nur nach Login sichtbar) -->
         <section id="adminDashboard" class="hidden space-y-8 bg-slate-900 border border-orange-500/40 rounded-2xl p-5 shadow-xl">
-            
-            <!-- Anfragen-Bereich -->
             <div class="space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
                     <div>
                         <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Admin-Bereich</span>
-                        <h2 class="text-xl font-bold text-white">Eingegangene Projektanfragen</h2>
+                        <h2 class="text-xl font-bold text-white">Projektanfragen & Zuweisung</h2>
                     </div>
                     <button onclick="loadAdminData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-700 transition">
                         ↻ Aktualisieren
                     </button>
                 </div>
-                <div id="inquiriesList" class="space-y-3">
+                <div id="inquiriesList" class="space-y-4">
                     <p class="text-sm text-slate-400">Lade Anfragen...</p>
-                </div>
-            </div>
-
-            <!-- Partner & Maker-Bereich -->
-            <div class="space-y-4 pt-4 border-t border-slate-800">
-                <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Netzwerk</span>
-                    <h2 class="text-xl font-bold text-white">Geprüfte 3D-Druck-Partner & Maker</h2>
-                </div>
-                <div id="partnersList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Fester Eintrag für Kevins Betrieb basierend auf deinen Daten -->
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-bold text-white text-base">BoostedLayers</h3>
-                                <p class="text-xs text-orange-400">Ansprechpartner: Kevin Sparmann</p>
-                            </div>
-                            <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2 py-0.5 rounded-full font-medium">Aktiv</span>
-                        </div>
-                        <p class="text-xs text-slate-400">📍 Mühlhäuser Straße 8, 99991 Großengottern</p>
-                        <div class="text-xs text-slate-300 space-y-1 pt-1 border-t border-slate-900">
-                            <p>🖨️ <strong>Drucker:</strong> Bambu Lab H2D & X2D (max. ~320x325x340 mm)</p>
-                            <p>🧬 <strong>Materialien:</strong> Praktisch alle thermoplastischen Filamente</p>
-                            <p>💻 <strong>Konstruktion:</strong> Fusion 360 / SolidWorks</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -84,9 +56,43 @@
                 Industrielle & regionale 3D-Druck- & Fertigungsvermittlung
             </h1>
             <p class="text-slate-400 text-sm sm:text-base max-w-2xl leading-relaxed">
-                Defektes Ersatzteil, individueller Prototyp oder Kleinserie? PrintConnect verbindet Ihre technische Herausforderung direkt mit geprüften 3D-Druck-Partnern.
+                Defektes Ersatzteil, individueller Prototyp oder Kleinserie? PrintConnect verbindet Ihre technische Herausforderung direkt mit geprüften 3D-Druck-Partnern aus der Region.
             </p>
         </header>
+
+        <!-- ÖFFENTLICHER PARTNER / MAKER BEREICH -->
+        <section class="space-y-4">
+            <div class="border-b border-slate-800 pb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-orange-500">Unser Netzwerk</span>
+                <h2 class="text-xl font-bold text-white">Unsere zertifizierten 3D-Druck-Partner</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Kevins Maker-Profil -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">BoostedLayers</h3>
+                            <p class="text-xs text-orange-400 font-medium">Ansprechpartner: Kevin Sparmann</p>
+                        </div>
+                        <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
+                    </div>
+                    <p class="text-xs text-slate-400">📍 Mühlhäuser Straße 8, 99991 Großengottern</p>
+                    <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
+                        <p>🖨️ <strong>Maschinenpark:</strong> Bambu Lab H2D & X2D (Bauvolumen max. ~320x325x340 mm)</p>
+                        <p>🧬 <strong>Materialien:</strong> Praktisch alle thermoplastischen Filamente</p>
+                        <p>💻 <strong>Konstruktion & CAD:</strong> Fusion 360 / SolidWorks</p>
+                    </div>
+                </div>
+                
+                <!-- Platzhalter für zukünftige Partner -->
+                <div class="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center space-y-2">
+                    <span class="text-slate-600 text-2xl">+</span>
+                    <h3 class="font-semibold text-slate-400 text-sm">Weitere Partner folgen</h3>
+                    <p class="text-xs text-slate-600 max-w-xs">Unser Netzwerk wächst kontinuierlich für noch mehr Kapazität und regionale Nähe.</p>
+                </div>
+            </div>
+        </section>
 
         <!-- ÖFFENTLICHES ANFRAGEFORMULAR -->
         <section id="publicFormSection" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
@@ -160,17 +166,15 @@
     </div>
 
     <script>
-        // Supabase Verbindung
         const SUPABASE_URL = 'https://jfxnmnmeqseyetyeudhc.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_xTZEyghg14XQIH-lDvKxuw_rczCHRS4';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Modal Steuerung
         function toggleModal(show) {
             document.getElementById('loginModal').classList.toggle('hidden', !show);
         }
 
-        // Öffentliches Formular absenden
+        // Formular absenden
         document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -181,8 +185,9 @@
                 project_title: document.getElementById('project_title').value,
                 project_details: document.getElementById('project_details').value,
                 customer_name: document.getElementById('customer_name').value,
-                customer_email: document.getElementById('customer_email').value,
-                status: 'new'
+                customer_email: document.getElementById('customer_email'].value,
+                status: 'new',
+                assigned_partner: 'Noch nicht zugewiesen'
             };
 
             const { error } = await supabaseClient.from('inquiries').insert([payload]);
@@ -198,7 +203,7 @@
             }
         });
 
-        // Admin Login
+        // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginSubmitBtn');
@@ -222,13 +227,11 @@
             }
         });
 
-        // Admin Logout
         async function handleLogout() {
             await supabaseClient.auth.signOut();
             checkAuthState();
         }
 
-        // Login-Status prüfen und Ansicht umschalten
         async function checkAuthState() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const isLoggedIn = !!session;
@@ -237,16 +240,11 @@
             document.getElementById('openLoginBtn').classList.toggle('hidden', isLoggedIn);
             document.getElementById('logoutBtn').classList.toggle('hidden', !isLoggedIn);
 
-            // Kundenformular ausblenden, sobald Admin eingeloggt ist
-            document.getElementById('publicHero').classList.toggle('hidden', isLoggedIn);
-            document.getElementById('publicFormSection').classList.toggle('hidden', isLoggedIn);
-
             if (isLoggedIn) {
                 loadAdminData();
             }
         }
 
-        // Anfragen aus Supabase laden
         async function loadAdminData() {
             const listContainer = document.getElementById('inquiriesList');
             listContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten...</p>';
@@ -269,36 +267,60 @@
             listContainer.innerHTML = data.map(item => {
                 const date = item.created_at ? new Date(item.created_at).toLocaleDateString('de-DE', {
                     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                }) : 'Unbekanntes Datum';
+                }) : 'Unbekannt';
 
                 const currentStatus = item.status || 'new';
+                const assignedPartner = item.assigned_partner || '';
+
+                // E-Mail-Link für den Kunden generieren (öffnet das Standard-Mailprogramm)
+                const mailSubject = encodeURIComponent(`Dein PrintConnect Projekt: ${item.project_title}`);
+                const mailBody = encodeURIComponent(`Hallo ${item.customer_name},\n\nwir haben deine Anfrage bezüglich "${item.project_title}" erhalten und bearbeiten diese.\n\nDetails:\n${item.project_details}\n\nViele Grüße\nDein PrintConnect Team`);
+                const mailtoLink = `mailto:${item.customer_email}?subject=${mailSubject}&body=${mailBody}`;
 
                 return `
                     <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
                         <div class="flex flex-wrap justify-between items-start gap-2">
                             <div>
-                                <h3 class="font-bold text-white text-base">${escapeHtml(item.project_title || item.title || 'Ohne Titel')}</h3>
+                                <h3 class="font-bold text-white text-base">${escapeHtml(item.project_title || 'Ohne Titel')}</h3>
                                 <p class="text-xs text-slate-400">
-                                    Von: <span class="text-slate-200">${escapeHtml(item.customer_name || item.name || 'Unbekannt')}</span> 
-                                    (${escapeHtml(item.customer_email || item.email || 'Keine E-Mail')}) · ${date}
+                                    Von: <span class="text-slate-200">${escapeHtml(item.customer_name || 'Unbekannt')}</span> 
+                                    (<a href="${mailtoLink}" class="text-orange-400 hover:underline">${escapeHtml(item.customer_email || 'Keine E-Mail')}</a>) · ${date}
                                 </p>
                             </div>
-                            <select onchange="updateStatus('${item.id}', this.value)" 
-                                class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
-                                <option value="new" ${currentStatus === 'new' ? 'selected' : ''}>🟡 Neu</option>
-                                <option value="in_progress" ${currentStatus === 'in_progress' ? 'selected' : ''}>🔵 In Bearbeitung</option>
-                                <option value="done" ${currentStatus === 'done' ? 'selected' : ''}>🟢 Abgeschlossen</option>
-                            </select>
+                            <div class="flex items-center gap-2">
+                                <select onchange="updateStatus('${item.id}', this.value)" 
+                                    class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
+                                    <option value="new" ${currentStatus === 'new' ? 'selected' : ''}>🟡 Neu</option>
+                                    <option value="in_progress" ${currentStatus === 'in_progress' ? 'selected' : ''}>🔵 In Bearbeitung</option>
+                                    <option value="done" ${currentStatus === 'done' ? 'selected' : ''}>🟢 Abgeschlossen</option>
+                                </select>
+                            </div>
                         </div>
+
                         <p class="text-sm text-slate-300 bg-slate-900/70 p-3 rounded-lg border border-slate-800/80 whitespace-pre-line">
-                            ${escapeHtml(item.project_details || item.description || 'Keine Beschreibung angegeben.')}
+                            ${escapeHtml(item.project_details || 'Keine Beschreibung angegeben.')}
                         </p>
+
+                        <!-- Zuweisung an Partner & Kontakt-Button -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-900 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 font-medium">Zuweisen an:</span>
+                                <select onchange="updatePartner('${item.id}', this.value)"
+                                    class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
+                                    <option value="Noch nicht zugewiesen" ${assignedPartner === '' || assignedPartner === 'Noch nicht zugewiesen' ? 'selected' : ''}>-- Bitte wählen --</option>
+                                    <option value="Kevin Sparmann (BoostedLayers)" ${assignedPartner === 'Kevin Sparmann (BoostedLayers)' ? 'selected' : ''}>Kevin Sparmann (BoostedLayers)</option>
+                                </select>
+                            </div>
+
+                            <a href="${mailtoLink}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                                ✉️ E-Mail an Kunde schreiben
+                            </a>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Status einer Anfrage in Supabase ändern
         async function updateStatus(id, newStatus) {
             const { error } = await supabaseClient
                 .from('inquiries')
@@ -310,14 +332,25 @@
             }
         }
 
-        // Schutz vor fehlerhafter HTML-Darstellung
+        async function updatePartner(id, partnerName) {
+            const { error } = await supabaseClient
+                .from('inquiries')
+                .update({ assigned_partner: partnerName })
+                .eq('id', id);
+
+            if (error) {
+                alert('Partner konnte nicht zugewiesen werden: ' + error.message);
+            } else {
+                alert(`Auftrag erfolgreich zugewiesen an: ${partnerName}`);
+            }
+        }
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Beim Laden der Seite prüfen, ob bereits eingeloggt
         checkAuthState();
     </script>
 </body>
