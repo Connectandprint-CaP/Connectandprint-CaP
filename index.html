@@ -187,7 +187,7 @@
             }
         }
 
-        // Formular absenden mit Datei-Upload
+        // Formular absenden mit Datei-Upload (angepasst auf 'inquiry-files' ohne s)
         document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -203,7 +203,7 @@
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
                 
                 const { error: uploadError } = await supabaseClient.storage
-                    .from('inquiries-files')
+                    .from('inquiry-files')
                     .upload(fileName, file);
 
                 if (uploadError) {
@@ -214,7 +214,7 @@
                 }
 
                 const { data: urlData } = supabaseClient.storage
-                    .from('inquiries-files')
+                    .from('inquiry-files')
                     .getPublicUrl(fileName);
                 
                 fileUrl = urlData.publicUrl;
