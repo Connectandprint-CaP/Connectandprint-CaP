@@ -170,7 +170,7 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_xTZEyghg14XQIH-lDvKxuw_rczCHRS4';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let cachedPartners = []; // Zwischenspeicher für geladene Partner
+        let cachedPartners = [];
 
         function toggleModal(show) {
             const modal = document.getElementById('loginModal');
@@ -263,11 +263,9 @@
             
             listContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten & Partner...</p>';
 
-            // 1. Partner aus Supabase laden
             const partnersRes = await supabaseClient.from('partners').select('*');
             cachedPartners = partnersRes.data || [];
 
-            // Falls noch kein Partner in der DB steht, legen wir einen Fallback an, damit das System nicht leer bleibt
             if (cachedPartners.length === 0) {
                 cachedPartners = [{
                     name: 'Kevin Sparmann',
@@ -276,7 +274,6 @@
                 }];
             }
 
-            // 2. Anfragen aus Supabase laden
             const { data, error } = await supabaseClient
                 .from('inquiries')
                 .select('*')
@@ -299,12 +296,10 @@
 
                 const currentStatus = item.status || 'new';
 
-                // E-Mail für den Kunden
                 const customerMailSubject = encodeURIComponent(`Dein PrintConnect Projekt: ${item.project_title}`);
                 const customerMailBody = encodeURIComponent(`Hallo ${item.customer_name},\n\nwir haben deine Anfrage bezüglich "${item.project_title}" erhalten und bearbeiten diese.\n\nDetails:\n${item.project_details}\n\nViele Grüße\nDein PrintConnect Team`);
                 const customerMailto = `mailto:${item.customer_email}?subject=${customerMailSubject}&body=${customerMailBody}`;
 
-                // Partner-Auswahlmöglichkeiten generieren
                 const partnerOptions = cachedPartners.map((p, idx) => {
                     return `<option value="${idx}">${p.business_name} (${p.name})</option>`;
                 }).join('');
@@ -337,7 +332,6 @@
                         <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-900 text-xs">
                             <div class="flex items-center gap-2">
                                 <span class="text-slate-400 font-medium">Partner wählen:</span>
-                                id="partner-select-${item.id}"
                                 <select id="partner-select-${item.id}" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
                                     ${partnerOptions}
                                 </select>
@@ -359,7 +353,7 @@
             }).join('');
         }
 
-        // Funktion zum Absenden der E-Mail an den gewählten Partner mit dem Standardtext
+        // Saubere E-Mail-Formatierung mit echten Zeilenumbrüchen
         function sendToPartner(id, title, details, custName, custEmail) {
             const selectEl = document.getElementById(`partner-select-${id}`);
             if (!selectEl) return;
@@ -372,9 +366,8 @@
                 return;
             }
 
-            // Universeller Standardtext
-            const subject = encodeURIComponent(`Neuer PrintConnect Auftrag: ${title}`);
-            const body = encodeURIComponent(
+            const subject = `Neuer PrintConnect Auftrag: ${title}`;
+            const body = 
 `Hallo ${partner.name},
 
 wir haben eine neue Projektanfrage über PrintConnect erhalten, die perfekt zu deinem Profil und deinen Kapazitäten passt.
@@ -391,11 +384,9 @@ E-Mail: ${custEmail}
 Bitte setze dich zeitnah direkt mit dem Kunden in Verbindung, um die Details, das Design und den Ablauf zu besprechen.
 
 Viele Grüße  
-Dein PrintConnect Team`
-            );
+Dein PrintConnect Team`;
 
-            // E-Mail-Client öffnen
-            window.location.href = `mailto:${partner.email}?subject=${subject}&body=${body}`;
+            window.location.href = `mailto:${partner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         }
 
         async function updateStatus(id, newStatus) {
