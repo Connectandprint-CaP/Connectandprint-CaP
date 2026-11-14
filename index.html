@@ -353,7 +353,7 @@
             }).join('');
         }
 
-        // E-Mail an Partner mit echten Zeilenumbrüchen
+        // E-Mail an Partner mit erzwungenen Zeilenumbrüchen (%0A)
         function sendToPartner(id) {
             const item = cachedInquiries.find(i => i.id === id);
             if (!item) return;
@@ -368,7 +368,9 @@
             }
 
             const subject = `Neuer PrintConnect Auftrag: ${item.project_title}`;
-            const body = 
+            
+            // Wir bauen den Text zusammen und ersetzen alle echten Umbrüche manuell durch %0A
+            const rawBody = 
 `Hallo ${partner.name},
 
 wir haben eine neue Projektanfrage über PrintConnect erhalten, die perfekt zu deinem Profil und deinen Kapazitäten passt.
@@ -387,16 +389,20 @@ Bitte setze dich zeitnah direkt mit dem Kunden in Verbindung, um die Details, da
 Viele Grüße  
 Dein PrintConnect Team`;
 
-            window.location.href = `mailto:${partner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            // Erzwinge die Zeilenumbrüche für mobile Mail-Apps
+            const encodedBody = encodeURIComponent(rawBody).replace(/%0A/g, '%0A');
+
+            window.location.href = `mailto:${partner.email}?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
         }
 
-        // E-Mail an Kunden mit echten Zeilenumbrüchen
+        // E-Mail an Kunden mit erzwungenen Zeilenumbrüchen (%0A)
         function sendToCustomer(id) {
             const item = cachedInquiries.find(i => i.id === id);
             if (!item || !item.customer_email) return;
 
             const subject = `Dein PrintConnect Projekt: ${item.project_title}`;
-            const body = 
+            
+            const rawBody = 
 `Hallo ${item.customer_name},
 
 wir haben deine Anfrage bezüglich "${item.project_title}" erhalten und bearbeiten diese.
@@ -407,7 +413,9 @@ ${item.project_details}
 Viele Grüße  
 Dein PrintConnect Team`;
 
-            window.location.href = `mailto:${item.customer_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            const encodedBody = encodeURIComponent(rawBody).replace(/%0A/g, '%0A');
+
+            window.location.href = `mailto:${item.customer_email}?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
         }
 
         async function updateStatus(id, newStatus) {
@@ -418,9 +426,6 @@ Dein PrintConnect Team`;
 
             if (error) {
                 alert('Status konnte nicht gespeichert werden: ' + error.message);
-            } else {
-                // Kurze visuelle Bestätigung im Hintergrund
-                console.log('Status aktualisiert auf:', newStatus);
             }
         }
 
