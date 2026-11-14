@@ -171,7 +171,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let cachedPartners = [];
-        let cachedInquiries = []; // Speichert die Anfragen zwischen für den sicheren Zugriff
+        let cachedInquiries = [];
 
         function toggleModal(show) {
             const modal = document.getElementById('loginModal');
@@ -353,7 +353,7 @@
             }).join('');
         }
 
-        // E-Mail an Partner mit echten Zeilenumbrüchen übergeben
+        // E-Mail an Partner mit echten Zeilenumbrüchen
         function sendToPartner(id) {
             const item = cachedInquiries.find(i => i.id === id);
             if (!item) return;
@@ -390,7 +390,7 @@ Dein PrintConnect Team`;
             window.location.href = `mailto:${partner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         }
 
-        // E-Mail an Kunden mit echten Zeilenumbrüchen übergeben
+        // E-Mail an Kunden mit echten Zeilenumbrüchen
         function sendToCustomer(id) {
             const item = cachedInquiries.find(i => i.id === id);
             if (!item || !item.customer_email) return;
@@ -418,6 +418,9 @@ Dein PrintConnect Team`;
 
             if (error) {
                 alert('Status konnte nicht gespeichert werden: ' + error.message);
+            } else {
+                // Kurze visuelle Bestätigung im Hintergrund
+                console.log('Status aktualisiert auf:', newStatus);
             }
         }
 
