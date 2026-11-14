@@ -35,7 +35,7 @@
                 <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
                     <div>
                         <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Admin-Bereich</span>
-                        <h2 class="text-xl font-bold text-white">Projektanfragen & Zuweisung</h2>
+                        <h2 class="text-xl font-bold text-white">Eingegangene Kundenanfragen & Zuweisung</h2>
                     </div>
                     <button type="button" onclick="loadAdminData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-700 transition">
                         ↻ Aktualisieren
@@ -170,6 +170,8 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_xTZEyghg14XQIH-lDvKxuw_rczCHRS4';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let cachedPartners = []; // Zwischenspeicher für geladene Partner
+
         function toggleModal(show) {
             const modal = document.getElementById('loginModal');
             if (modal) {
@@ -189,8 +191,7 @@
                 project_details: document.getElementById('project_details').value,
                 customer_name: document.getElementById('customer_name').value,
                 customer_email: document.getElementById('customer_email').value,
-                status: 'new',
-                assigned_partner: 'Noch nicht zugewiesen'
+                status: 'new'
             };
 
             const { error } = await supabaseClient.from('inquiries').insert([payload]);
@@ -242,10 +243,14 @@
             const adminDashboard = document.getElementById('adminDashboard');
             const openLoginBtn = document.getElementById('openLoginBtn');
             const logoutBtn = document.getElementById('logoutBtn');
+            const publicHero = document.getElementById('publicHero');
+            const publicFormSection = document.getElementById('publicFormSection');
 
             if (adminDashboard) adminDashboard.classList.toggle('hidden', !isLoggedIn);
             if (openLoginBtn) openLoginBtn.classList.toggle('hidden', isLoggedIn);
             if (logoutBtn) logoutBtn.classList.toggle('hidden', !isLoggedIn);
+            if (publicHero) publicHero.classList.toggle('hidden', isLoggedIn);
+            if (publicFormSection) publicFormSection.classList.toggle('hidden', isLoggedIn);
 
             if (isLoggedIn) {
                 loadAdminData();
@@ -256,8 +261,22 @@
             const listContainer = document.getElementById('inquiriesList');
             if (!listContainer) return;
             
-            listContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten...</p>';
+            listContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten & Partner...</p>';
 
+            // 1. Partner aus Supabase laden
+            const partnersRes = await supabaseClient.from('partners').select('*');
+            cachedPartners = partnersRes.data || [];
+
+            // Falls noch kein Partner in der DB steht, legen wir einen Fallback an, damit das System nicht leer bleibt
+            if (cachedPartners.length === 0) {
+                cachedPartners = [{
+                    name: 'Kevin Sparmann',
+                    business_name: 'BoostedLayers',
+                    email: 'kevin@boostedlayers.de'
+                }];
+            }
+
+            // 2. Anfragen aus Supabase laden
             const { data, error } = await supabaseClient
                 .from('inquiries')
                 .select('*')
@@ -279,20 +298,25 @@
                 }) : 'Unbekannt';
 
                 const currentStatus = item.status || 'new';
-                const assignedPartner = item.assigned_partner || 'Noch nicht zugewiesen';
 
-                const mailSubject = encodeURIComponent(`Dein PrintConnect Projekt: ${item.project_title}`);
-                const mailBody = encodeURIComponent(`Hallo ${item.customer_name},\n\nwir haben deine Anfrage bezüglich "${item.project_title}" erhalten und bearbeiten diese.\n\nDetails:\n${item.project_details}\n\nViele Grüße\nDein PrintConnect Team`);
-                const mailtoLink = `mailto:${item.customer_email}?subject=${mailSubject}&body=${mailBody}`;
+                // E-Mail für den Kunden
+                const customerMailSubject = encodeURIComponent(`Dein PrintConnect Projekt: ${item.project_title}`);
+                const customerMailBody = encodeURIComponent(`Hallo ${item.customer_name},\n\nwir haben deine Anfrage bezüglich "${item.project_title}" erhalten und bearbeiten diese.\n\nDetails:\n${item.project_details}\n\nViele Grüße\nDein PrintConnect Team`);
+                const customerMailto = `mailto:${item.customer_email}?subject=${customerMailSubject}&body=${customerMailBody}`;
+
+                // Partner-Auswahlmöglichkeiten generieren
+                const partnerOptions = cachedPartners.map((p, idx) => {
+                    return `<option value="${idx}">${p.business_name} (${p.name})</option>`;
+                }).join('');
 
                 return `
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3" id="inquiry-card-${item.id}">
                         <div class="flex flex-wrap justify-between items-start gap-2">
                             <div>
                                 <h3 class="font-bold text-white text-base">${escapeHtml(item.project_title || 'Ohne Titel')}</h3>
                                 <p class="text-xs text-slate-400">
                                     Von: <span class="text-slate-200">${escapeHtml(item.customer_name || 'Unbekannt')}</span> 
-                                    (<a href="${mailtoLink}" class="text-orange-400 hover:underline">${escapeHtml(item.customer_email || 'Keine E-Mail')}</a>) · ${date}
+                                    (<a href="${customerMailto}" class="text-orange-400 hover:underline">${escapeHtml(item.customer_email || 'Keine E-Mail')}</a>) · ${date}
                                 </p>
                             </div>
                             <div class="flex items-center gap-2">
@@ -309,23 +333,69 @@
                             ${escapeHtml(item.project_details || 'Keine Beschreibung angegeben.')}
                         </p>
 
+                        <!-- Dynamischer Partner-Versand -->
                         <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-900 text-xs">
                             <div class="flex items-center gap-2">
-                                <span class="text-slate-400 font-medium">Zuweisen an:</span>
-                                <select onchange="updatePartner('${item.id}', this.value)"
-                                    class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
-                                    <option value="Noch nicht zugewiesen" ${assignedPartner === 'Noch nicht zugewiesen' ? 'selected' : ''}>-- Bitte wählen --</option>
-                                    <option value="Kevin Sparmann (BoostedLayers)" ${assignedPartner === 'Kevin Sparmann (BoostedLayers)' ? 'selected' : ''}>Kevin Sparmann (BoostedLayers)</option>
+                                <span class="text-slate-400 font-medium">Partner wählen:</span>
+                                id="partner-select-${item.id}"
+                                <select id="partner-select-${item.id}" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
+                                    ${partnerOptions}
                                 </select>
                             </div>
 
-                            <a href="${mailtoLink}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
-                                ✉️ E-Mail an Kunde schreiben
-                            </a>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="sendToPartner('${item.id}', '${escapeHtml(item.project_title)}', '${escapeHtml(item.project_details)}', '${escapeHtml(item.customer_name)}', '${escapeHtml(item.customer_email)}')" 
+                                    class="bg-orange-600 hover:bg-orange-500 text-white font-medium px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                                    🚀 An Partner senden
+                                </button>
+
+                                <a href="${customerMailto}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                                    ✉️ Kunde
+                                </a>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        // Funktion zum Absenden der E-Mail an den gewählten Partner mit dem Standardtext
+        function sendToPartner(id, title, details, custName, custEmail) {
+            const selectEl = document.getElementById(`partner-select-${id}`);
+            if (!selectEl) return;
+
+            const selectedIndex = selectEl.value;
+            const partner = cachedPartners[selectedIndex];
+
+            if (!partner || !partner.email) {
+                alert('Bitte wähle einen gültigen Partner aus.');
+                return;
+            }
+
+            // Universeller Standardtext
+            const subject = encodeURIComponent(`Neuer PrintConnect Auftrag: ${title}`);
+            const body = encodeURIComponent(
+`Hallo ${partner.name},
+
+wir haben eine neue Projektanfrage über PrintConnect erhalten, die perfekt zu deinem Profil und deinen Kapazitäten passt.
+
+--- PROJEKDETAILS ---
+Projekt: ${title}
+Beschreibung & Anforderungen:
+${details}
+
+--- KUNDENDATEN ---
+Name / Firma: ${custName}
+E-Mail: ${custEmail}
+
+Bitte setze dich zeitnah direkt mit dem Kunden in Verbindung, um die Details, das Design und den Ablauf zu besprechen.
+
+Viele Grüße  
+Dein PrintConnect Team`
+            );
+
+            // E-Mail-Client öffnen
+            window.location.href = `mailto:${partner.email}?subject=${subject}&body=${body}`;
         }
 
         async function updateStatus(id, newStatus) {
@@ -336,19 +406,6 @@
 
             if (error) {
                 alert('Status konnte nicht gespeichert werden: ' + error.message);
-            }
-        }
-
-        async function updatePartner(id, partnerName) {
-            const { error } = await supabaseClient
-                .from('inquiries')
-                .update({ assigned_partner: partnerName })
-                .eq('id', id);
-
-            if (error) {
-                alert('Partner konnte nicht zugewiesen werden: ' + error.message);
-            } else {
-                alert(`Auftrag erfolgreich zugewiesen an: ${partnerName}`);
             }
         }
 
