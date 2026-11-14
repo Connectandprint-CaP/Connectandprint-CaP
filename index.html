@@ -1,146 +1,295 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrintConnect - 3D-Druck & Fertigungsvermittlung</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>PrintConnect | Industrielle 3D-Druck- & Fertigungsvermittlung</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-    <div class="max-w-md mx-auto p-4">
-        <!-- Header -->
-        <header class="flex justify-between items-center py-4 border-b border-slate-800">
-            <div>
-                <h1 class="text-lg font-bold text-orange-500 tracking-wider">PRINTCONNECT</h1>
-                <p class="text-[10px] text-slate-400">THÜRINGEN NETWORK</p>
-            </div>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <span id="status" class="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-1 rounded border border-emerald-800/50">Verbunden</span>
-                <button onclick="toggleAuthModal()" class="text-xs bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-orange-400 font-medium hover:bg-slate-800">
-                    Login / Portal
+                <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+                <span class="font-bold text-lg tracking-tight">PrintConnect</span>
+            </div>
+            <div>
+                <button id="openLoginBtn" onclick="toggleModal(true)" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-lg border border-slate-700 transition">
+                    Admin Login
+                </button>
+                <button id="logoutBtn" onclick="handleLogout()" class="hidden text-xs font-medium bg-red-950/60 hover:bg-red-900 text-red-200 px-3.5 py-2 rounded-lg border border-red-800/60 transition">
+                    Abmelden
                 </button>
             </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 space-y-10">
+
+        <!-- ADMIN DASHBOARD (Sichtbar nach dem Login) -->
+        <section id="adminDashboard" class="hidden space-y-4 bg-slate-900 border border-orange-500/40 rounded-2xl p-5 shadow-xl">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-orange-400">Admin-Bereich</span>
+                    <h2 class="text-xl font-bold text-white">Eingegangene Projektanfragen</h2>
+                </div>
+                <button onclick="loadInquiries()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-700 transition">
+                    ↻ Aktualisieren
+                </button>
+            </div>
+
+            <div id="inquiriesList" class="space-y-3">
+                <p class="text-sm text-slate-400">Lade Anfragen...</p>
+            </div>
+        </section>
+
+        <!-- HERO BEREICH -->
+        <header id="publicHero" class="space-y-3">
+            <p class="text-xs font-bold tracking-widest text-orange-500 uppercase">
+                Startregion: Gotha · Erfurt · Thüringen
+            </p>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                Industrielle & regionale 3D-Druck- & Fertigungsvermittlung
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base max-w-2xl leading-relaxed">
+                Defektes Ersatzteil, individueller Prototyp oder Kleinserie? PrintConnect verbindet Ihre technische Herausforderung direkt mit geprüften 3D-Druck-Partnern.
+            </p>
         </header>
 
-        <!-- Main Content: Anfrageformular -->
-        <main class="py-6 space-y-6">
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
-                <span class="text-[10px] bg-orange-950/80 text-orange-400 px-2 py-0.5 rounded border border-orange-800/50 font-semibold uppercase tracking-wider">
-                    Startregion: Gotha • Erfurt • Thüringen
-                </span>
-                <h2 class="text-xl font-bold mt-2 text-white leading-snug">
-                    Industrielle & regionale 3D-Druck- & Fertigungsvermittlung
-                </h2>
-                <p class="text-xs text-slate-300 mt-2">
-                    Defektes Ersatzteil, individueller Prototyp oder Kleinserie? PrintConnect verbindet Ihre technische Herausforderung direkt mit geprüften 3D-Druck-Partnern.
-                </p>
-            </div>
+        <!-- ÖFFENTLICHES ANFRAGEFORMULAR -->
+        <section id="publicFormSection" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+            <form id="inquiryForm" class="space-y-5">
+                <div class="space-y-4">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-orange-400">1. Projektdetails</h2>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Projekttitel / Bauteilname *</label>
+                        <input type="text" id="project_title" required placeholder="z. B. Zahnrad für Getriebe / Gehäuse-Prototyp"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-orange-500">
+                    </div>
 
-            <!-- Formular -->
-            <form id="inquiryForm" class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl space-y-4">
-                <h3 class="text-sm font-semibold text-orange-400 uppercase tracking-wide">1. Projektdetails</h3>
-                
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Ihr Name / Unternehmen *</label>
-                    <input type="text" id="customer_name" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Beschreibung des Problems / Einsatzzweck *</label>
+                        <textarea id="project_details" rows="4" required placeholder="Materialwunsch, Maße, Stückzahl oder Belastung..."
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-orange-500"></textarea>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse *</label>
-                    <input type="email" id="customer_email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                <div class="space-y-4 pt-2 border-t border-slate-800/80">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-orange-400">2. Kontaktdaten</h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1.5">Ihr Name / Firma *</label>
+                            <input type="text" id="customer_name" required placeholder="Max Mustermann"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1.5">E-Mail-Adresse *</label>
+                            <input type="email" id="customer_email" required placeholder="name@beispiel.de"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-orange-500">
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Projekt-Titel / Bauteil *</label>
-                    <input type="text" id="project_title" required placeholder="z. B. Halterung für Getriebe" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Beschreibung des Problems / Einsatzzweck *</label>
-                    <textarea id="project_details" rows="3" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none"></textarea>
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-lg shadow-orange-900/30">
-                    Anfrage jetzt verbindlich senden
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3.5 px-6 rounded-xl transition shadow-lg shadow-orange-950/40">
+                    Projektanfrage absenden
                 </button>
             </form>
-        </main>
-    </div>
+        </section>
 
-    <!-- Login Modal -->
-    <div id="authModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-bold text-orange-400 text-sm">Admin & Partner Login</h3>
-                <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-white text-sm font-bold px-2">✕</button>
+    </main>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Admin-Login</h3>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
-            <form id="loginForm" class="space-y-3">
+            <form id="loginForm" class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-300 mb-1">E-Mail</label>
-                    <input type="email" id="loginEmail" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                    <label class="block text-xs text-slate-400 mb-1">Admin E-Mail</label>
+                    <input type="email" id="loginEmail" required placeholder="admin@printconnect.de"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-300 mb-1">Passwort</label>
-                    <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                    <label class="block text-xs text-slate-400 mb-1">Passwort</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                 </div>
-                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-sm">
-                    Einloggen
+                <button type="submit" id="loginSubmitBtn"
+                    class="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-2.5 rounded-xl transition">
+                    Anmelden
                 </button>
             </form>
         </div>
     </div>
 
     <script>
+        // Supabase Verbindung
         const SUPABASE_URL = 'https://jfxnmnmeqseyetyeudhc.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_xTZEyghg14XQIH-lDvKxuw_rczCHRS4';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function toggleAuthModal() {
-            document.getElementById('authModal').classList.toggle('hidden');
+        // Modal Steuerung
+        function toggleModal(show) {
+            document.getElementById('loginModal').classList.toggle('hidden', !show);
         }
 
+        // Öffentliches Formular absenden
         document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.textContent = 'Wird gesendet...';
 
-            const { error } = await supabaseClient.from('inquiries').insert([{
-                customer_name: document.getElementById('customer_name').value,
-                customer_email: document.getElementById('customer_email').value,
+            const payload = {
                 project_title: document.getElementById('project_title').value,
                 project_details: document.getElementById('project_details').value,
+                customer_name: document.getElementById('customer_name').value,
+                customer_email: document.getElementById('customer_email').value,
                 status: 'new'
-            }]);
+            };
+
+            const { error } = await supabaseClient.from('inquiries').insert([payload]);
+
+            btn.disabled = false;
+            btn.textContent = 'Projektanfrage absenden';
 
             if (error) {
                 alert('Fehler: ' + error.message);
-                btn.disabled = false;
-                btn.textContent = 'Anfrage jetzt verbindlich senden';
             } else {
                 alert('Anfrage erfolgreich eingereicht!');
                 document.getElementById('inquiryForm').reset();
-                btn.disabled = false;
-                btn.textContent = 'Anfrage jetzt verbindlich senden';
             }
         });
 
+        // Admin Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const { error } = await supabaseClient.auth.signInWithPassword({
-                email: document.getElementById('loginEmail').value,
-                password: document.getElementById('loginPassword').value,
-            });
+            const btn = document.getElementById('loginSubmitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Prüfe Zugang...';
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            btn.disabled = false;
+            btn.textContent = 'Anmelden';
 
             if (error) {
                 alert('Login fehlgeschlagen: ' + error.message);
             } else {
-                alert('Erfolgreich eingeloggt!');
-                toggleAuthModal();
+                toggleModal(false);
+                document.getElementById('loginForm').reset();
+                checkAuthState();
             }
         });
+
+        // Admin Logout
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            checkAuthState();
+        }
+
+        // Login-Status prüfen und Ansicht umschalten
+        async function checkAuthState() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const isLoggedIn = !!session;
+
+            document.getElementById('adminDashboard').classList.toggle('hidden', !isLoggedIn);
+            document.getElementById('openLoginBtn').classList.toggle('hidden', isLoggedIn);
+            document.getElementById('logoutBtn').classList.toggle('hidden', !isLoggedIn);
+
+            // Kundenformular ausblenden, sobald Admin eingeloggt ist
+            document.getElementById('publicHero').classList.toggle('hidden', isLoggedIn);
+            document.getElementById('publicFormSection').classList.toggle('hidden', isLoggedIn);
+
+            if (isLoggedIn) {
+                loadInquiries();
+            }
+        }
+
+        // Anfragen aus Supabase laden
+        async function loadInquiries() {
+            const listContainer = document.getElementById('inquiriesList');
+            listContainer.innerHTML = '<p class="text-sm text-slate-400">Lade aktuelle Daten...</p>';
+
+            const { data, error } = await supabaseClient
+                .from('inquiries')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                listContainer.innerHTML = `<p class="text-sm text-red-400">Fehler beim Laden: ${error.message}</p>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                listContainer.innerHTML = '<p class="text-sm text-slate-400">Noch keine Anfragen vorhanden.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = data.map(item => {
+                const date = item.created_at ? new Date(item.created_at).toLocaleDateString('de-DE', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) : 'Unbekanntes Datum';
+
+                const currentStatus = item.status || 'new';
+
+                return `
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex flex-wrap justify-between items-start gap-2">
+                            <div>
+                                <h3 class="font-bold text-white text-base">${escapeHtml(item.project_title || item.title || 'Ohne Titel')}</h3>
+                                <p class="text-xs text-slate-400">
+                                    Von: <span class="text-slate-200">${escapeHtml(item.customer_name || item.name || 'Unbekannt')}</span> 
+                                    (${escapeHtml(item.customer_email || item.email || 'Keine E-Mail')}) · ${date}
+                                </p>
+                            </div>
+                            <select onchange="updateStatus('${item.id}', this.value)" 
+                                class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-orange-500">
+                                <option value="new" ${currentStatus === 'new' ? 'selected' : ''}>🟡 Neu</option>
+                                <option value="in_progress" ${currentStatus === 'in_progress' ? 'selected' : ''}>🔵 In Bearbeitung</option>
+                                <option value="done" ${currentStatus === 'done' ? 'selected' : ''}>🟢 Abgeschlossen</option>
+                            </select>
+                        </div>
+                        <p class="text-sm text-slate-300 bg-slate-900/70 p-3 rounded-lg border border-slate-800/80 whitespace-pre-line">
+                            ${escapeHtml(item.project_details || item.description || 'Keine Beschreibung angegeben.')}
+                        </p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Status einer Anfrage in Supabase ändern
+        async function updateStatus(id, newStatus) {
+            const { error } = await supabaseClient
+                .from('inquiries')
+                .update({ status: newStatus })
+                .eq('id', id);
+
+            if (error) {
+                alert('Status konnte nicht gespeichert werden: ' + error.message);
+            }
+        }
+
+        // Schutz vor fehlerhafter HTML-Darstellung bei Nutzereingaben
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Beim Laden der Seite prüfen, ob bereits eingeloggt
+        checkAuthState();
     </script>
 </body>
 </html>
-
