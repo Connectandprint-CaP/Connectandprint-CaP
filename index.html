@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintConnect - 3D-Druck & Fertigungsvermittlung</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+    <div class="max-w-md mx-auto p-4">
+        <!-- Header -->
+        <header class="flex justify-between items-center py-4 border-b border-slate-800">
+            <div>
+                <h1 class="text-lg font-bold text-orange-500 tracking-wider">PRINTCONNECT</h1>
+                <p class="text-[10px] text-slate-400">THÜRINGEN NETWORK</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="status" class="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-1 rounded border border-emerald-800/50">Verbunden</span>
+                <button onclick="toggleAuthModal()" class="text-xs bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-orange-400 font-medium hover:bg-slate-800">
+                    Login / Portal
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content: Anfrageformular -->
+        <main class="py-6 space-y-6">
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl">
+                <span class="text-[10px] bg-orange-950/80 text-orange-400 px-2 py-0.5 rounded border border-orange-800/50 font-semibold uppercase tracking-wider">
+                    Startregion: Gotha • Erfurt • Thüringen
+                </span>
+                <h2 class="text-xl font-bold mt-2 text-white leading-snug">
+                    Industrielle & regionale 3D-Druck- & Fertigungsvermittlung
+                </h2>
+                <p class="text-xs text-slate-300 mt-2">
+                    Defektes Ersatzteil, individueller Prototyp oder Kleinserie? PrintConnect verbindet Ihre technische Herausforderung direkt mit geprüften 3D-Druck-Partnern.
+                </p>
+            </div>
+
+            <!-- Formular -->
+            <form id="inquiryForm" class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl space-y-4">
+                <h3 class="text-sm font-semibold text-orange-400 uppercase tracking-wide">1. Projektdetails</h3>
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Ihr Name / Unternehmen *</label>
+                    <input type="text" id="customer_name" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse *</label>
+                    <input type="email" id="customer_email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Projekt-Titel / Bauteil *</label>
+                    <input type="text" id="project_title" required placeholder="z. B. Halterung für Getriebe" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Beschreibung des Problems / Einsatzzweck *</label>
+                    <textarea id="project_details" rows="3" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-orange-500 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-lg shadow-orange-900/30">
+                    Anfrage jetzt verbindlich senden
+                </button>
+            </form>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm p-5 rounded-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-orange-400 text-sm">Admin & Partner Login</h3>
+                <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-white text-sm font-bold px-2">✕</button>
+            </div>
+            <form id="loginForm" class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">E-Mail</label>
+                    <input type="email" id="loginEmail" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Passwort</label>
+                    <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                </div>
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-sm">
+                    Einloggen
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jfxnmnmeqseyetyeudhc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_xTZEyghg14XQIH-lDvKxuw_rczCHRS4';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function toggleAuthModal() {
+            document.getElementById('authModal').classList.toggle('hidden');
+        }
+
+        document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Wird gesendet...';
+
+            const { error } = await supabaseClient.from('inquiries').insert([{
+                customer_name: document.getElementById('customer_name').value,
+                customer_email: document.getElementById('customer_email').value,
+                project_title: document.getElementById('project_title').value,
+                project_details: document.getElementById('project_details').value,
+                status: 'new'
+            }]);
+
+            if (error) {
+                alert('Fehler: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Anfrage jetzt verbindlich senden';
+            } else {
+                alert('Anfrage erfolgreich eingereicht!');
+                document.getElementById('inquiryForm').reset();
+                btn.disabled = false;
+                btn.textContent = 'Anfrage jetzt verbindlich senden';
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value,
+            });
+
+            if (error) {
+                alert('Login fehlgeschlagen: ' + error.message);
+            } else {
+                alert('Erfolgreich eingeloggt!');
+                toggleAuthModal();
+            }
+        });
+    </script>
+</body>
+</html>
 
