@@ -47,7 +47,7 @@
                 <!-- SEKTION: PARTNER-VERWALTUNG -->
                 <div class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-orange-400">🤝 Netzwerk-Partner & Maschinen verwalten</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-orange-400">🤝 Netzwerk-Partner, Maschinen & Galerie</h3>
                         <button type="button" onclick="openPartnerFormForNew()" class="text-xs bg-orange-600 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg transition cursor-pointer">
                             + Neuen Partner hinzufügen
                         </button>
@@ -82,9 +82,21 @@
                                 <input type="text" id="p_materials" placeholder="z.B. PLA, PETG, Fusion 360" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
                             </div>
                         </div>
+
+                        <!-- BILDER-GALERIE UPLOAD & VERWALTUNG -->
+                        <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-orange-400">📸 Beispielbilder (Galerie)</label>
+                            <input type="file" id="p_gallery_files" multiple accept="image/*"
+                                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
+                            <p class="text-[10px] text-slate-500">Du kannst mehrere Bilder gleichzeitig auswählen.</p>
+                            
+                            <!-- Vorschau der bereits gespeicherten Bilder zum Löschen -->
+                            <div id="editGalleryPreview" class="flex flex-wrap gap-2 pt-1"></div>
+                        </div>
+
                         <div class="flex justify-end gap-2 pt-2">
                             <button type="button" onclick="togglePartnerForm(false)" class="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg cursor-pointer">Abbrechen</button>
-                            <button type="submit" class="text-xs bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg font-semibold cursor-pointer">Änderungen speichern</button>
+                            <button type="submit" id="savePartnerBtn" class="text-xs bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg font-semibold cursor-pointer">Änderungen speichern</button>
                         </div>
                     </form>
 
@@ -190,6 +202,16 @@
 
     </main>
 
+    <!-- LIGHTBOX FÜR BILDER-GROSSANSICHT -->
+    <div id="imageLightbox" onclick="closeLightbox()" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-zoom-out">
+        <div class="relative max-w-3xl max-h-[85vh] flex flex-col items-center">
+            <img id="lightboxImg" src="" alt="Beispielbild" class="max-w-full max-h-[80vh] rounded-xl border border-slate-700 shadow-2xl object-contain">
+            <button type="button" onclick="closeLightbox()" class="mt-3 text-xs bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600">
+                Schließen ✕
+            </button>
+        </div>
+    </div>
+
     <!-- LOGIN MODAL -->
     <div id="loginModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
@@ -223,10 +245,21 @@
 
         let cachedPartners = [];
         let cachedInquiries = [];
+        let currentEditingGallery = []; // Hält die aktuellen Bilder beim Bearbeiten
 
         function toggleModal(show) {
             const modal = document.getElementById('loginModal');
             if (modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function openLightbox(url) {
+            document.getElementById('lightboxImg').src = url;
+            document.getElementById('imageLightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('imageLightbox').classList.add('hidden');
+            document.getElementById('lightboxImg').src = '';
         }
 
         function togglePartnerForm(show) {
@@ -238,6 +271,8 @@
             document.getElementById('partnerFormTitle').textContent = 'Neuen Partner anlegen';
             document.getElementById('p_id').value = '';
             document.getElementById('partnerForm').reset();
+            currentEditingGallery = [];
+            renderEditGalleryPreview();
             togglePartnerForm(true);
         }
 
@@ -253,9 +288,38 @@
             document.getElementById('p_address').value = p.address || '';
             document.getElementById('p_machines').value = p.machines || '';
             document.getElementById('p_materials').value = p.materials || '';
+            document.getElementById('p_gallery_files').value = '';
+
+            currentEditingGallery = Array.isArray(p.gallery_urls) ? [...p.gallery_urls] : [];
+            renderEditGalleryPreview();
 
             togglePartnerForm(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderEditGalleryPreview() {
+            const container = document.getElementById('editGalleryPreview');
+            if (!container) return;
+
+            if (currentEditingGallery.length === 0) {
+                container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Noch keine Beispielbilder hinterlegt.</span>';
+                return;
+            }
+
+            container.innerHTML = currentEditingGallery.map((url, idx) => `
+                <div class="relative group w-16 h-16 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeGalleryImage(${idx})" title="Bild entfernen"
+                        class="absolute top-0.5 right-0.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold shadow cursor-pointer">
+                        ×
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeGalleryImage(index) {
+            currentEditingGallery.splice(index, 1);
+            renderEditGalleryPreview();
         }
 
         loadPublicPartners();
@@ -268,56 +332,92 @@
             cachedPartners = data || [];
 
             if (cachedPartners.length === 0) {
-                grid.innerHTML = `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-bold text-white text-lg">BoostedLayers</h3>
-                                <p class="text-xs text-orange-400 font-medium">Ansprechpartner: Kevin Sparmann</p>
-                            </div>
-                            <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
-                        </div>
-                        <p class="text-xs text-slate-400">📍 Mühlhäuser Straße 8, 99991 Großengottern</p>
-                        <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
-                            <p>🖨️ <strong>Maschinenpark:</strong> Bambu Lab X2D</p>
-                            <p>🧬 <strong>Materialien:</strong> Alle thermoplastischen Filamente</p>
-                        </div>
-                    </div>
-                `;
+                grid.innerHTML = `<p class="text-sm text-slate-400">Aktuell keine Partner eingetragen.</p>`;
                 return;
             }
 
-            grid.innerHTML = cachedPartners.map(p => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-white text-lg">${escapeHtml(p.business_name || p.name || 'Partner')}</h3>
-                            <p class="text-xs text-orange-400 font-medium">Ansprechpartner: ${escapeHtml(p.contact_name || p.name || 'Unbekannt')}</p>
+            grid.innerHTML = cachedPartners.map(p => {
+                const gallery = Array.isArray(p.gallery_urls) ? p.gallery_urls : [];
+                let galleryHtml = '';
+                
+                if (gallery.length > 0) {
+                    galleryHtml = `
+                        <div class="pt-3 border-t border-slate-800/80 space-y-1.5">
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">📸 Arbeitsbeispiele</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${gallery.map(imgUrl => `
+                                    <div onclick="openLightbox('${imgUrl}')" class="aspect-square rounded-lg overflow-hidden border border-slate-800 hover:border-orange-500 transition cursor-zoom-in bg-slate-950">
+                                        <img src="${imgUrl}" alt="Referenzdruck" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
-                        <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
+                    `;
+                }
+
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-white text-lg">${escapeHtml(p.business_name || p.name || 'Partner')}</h3>
+                                    <p class="text-xs text-orange-400 font-medium">Ansprechpartner: ${escapeHtml(p.contact_name || p.name || 'Unbekannt')}</p>
+                                </div>
+                                <span class="text-[10px] bg-green-950 text-green-300 border border-green-800 px-2.5 py-1 rounded-full font-medium">Verifiziert</span>
+                            </div>
+                            ${p.address ? `<p class="text-xs text-slate-400">📍 ${escapeHtml(p.address)}</p>` : ''}
+                            <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
+                                ${p.machines ? `<p>🖨️ <strong>Maschinenpark:</strong> ${escapeHtml(p.machines)}</p>` : ''}
+                                ${p.materials ? `<p>🧬 <strong>Materialien/CAD:</strong> ${escapeHtml(p.materials)}</p>` : ''}
+                            </div>
+                        </div>
+                        ${galleryHtml}
                     </div>
-                    ${p.address ? `<p class="text-xs text-slate-400">📍 ${escapeHtml(p.address)}</p>` : ''}
-                    <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-slate-800/80">
-                        ${p.machines ? `<p>🖨️ <strong>Maschinenpark:</strong> ${escapeHtml(p.machines)}</p>` : ''}
-                        ${p.materials ? `<p>🧬 <strong>Materialien/CAD:</strong> ${escapeHtml(p.materials)}</p>` : ''}
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         async function handleSavePartner(e) {
             e.preventDefault();
+            const btn = document.getElementById('savePartnerBtn');
+            btn.disabled = true;
+            btn.textContent = 'Speichere & lade Bilder hoch...';
+
             const id = document.getElementById('p_id').value;
             const contactVal = document.getElementById('p_name').value;
+            const fileInput = document.getElementById('p_gallery_files');
+
+            // Neue Bilder hochladen, falls ausgewählt
+            if (fileInput && fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const file = fileInput.files[i];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `gallery_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('inquiry-files')
+                        .upload(fileName, file);
+
+                    if (uploadError) {
+                        alert(`Fehler beim Hochladen von ${file.name}: ${uploadError.message}`);
+                    } else {
+                        const { data: urlData } = supabaseClient.storage
+                            .from('inquiry-files')
+                            .getPublicUrl(fileName);
+                        currentEditingGallery.push(urlData.publicUrl);
+                    }
+                }
+            }
             
             const payload = {
                 business_name: document.getElementById('p_business').value,
                 contact_name: contactVal,
-                name: contactVal, // Unterstützt sowohl 'name' als auch 'contact_name' für Supabase
+                name: contactVal,
                 email: document.getElementById('p_email').value,
                 address: document.getElementById('p_address').value,
                 machines: document.getElementById('p_machines').value,
-                materials: document.getElementById('p_materials').value
+                materials: document.getElementById('p_materials').value,
+                gallery_urls: currentEditingGallery
             };
 
             let error;
@@ -329,12 +429,16 @@
                 error = res.error;
             }
 
+            btn.disabled = false;
+            btn.textContent = 'Änderungen speichern';
+
             if (error) {
                 alert('Fehler beim Speichern: ' + error.message);
             } else {
-                alert('Partner erfolgreich gespeichert!');
+                alert('Partner & Galerie erfolgreich gespeichert!');
                 document.getElementById('partnerForm').reset();
                 document.getElementById('p_id').value = '';
+                currentEditingGallery = [];
                 togglePartnerForm(false);
                 loadAdminData();
                 loadPublicPartners();
@@ -467,18 +571,20 @@
             if (adminPartnerList) {
                 adminPartnerList.innerHTML = cachedPartners.length === 0 
                     ? '<p class="text-xs text-slate-500 italic">Keine Partner eingetragen.</p>'
-                    : cachedPartners.map(p => `
+                    : cachedPartners.map(p => {
+                        const imgCount = Array.isArray(p.gallery_urls) ? p.gallery_urls.length : 0;
+                        return `
                         <div class="flex flex-wrap justify-between items-center bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 text-xs gap-2">
                             <div>
                                 <span class="font-bold text-white">${escapeHtml(p.business_name || p.name || 'Partner')}</span> 
-                                <span class="text-slate-400">(${escapeHtml(p.contact_name || p.name || 'Unbekannt')} · ${escapeHtml(p.email)})</span>
+                                <span class="text-slate-400">(${escapeHtml(p.contact_name || p.name || 'Unbekannt')} · ${imgCount} Bilder)</span>
                             </div>
                             <div class="flex items-center gap-1">
                                 <button type="button" onclick="editPartner('${p.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded transition cursor-pointer">Bearbeiten</button>
                                 <button type="button" onclick="deletePartner('${p.id}')" class="bg-red-950/60 hover:bg-red-900 text-red-200 px-2.5 py-1 rounded transition cursor-pointer">Löschen</button>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
             }
 
             const { data, error } = await supabaseClient
